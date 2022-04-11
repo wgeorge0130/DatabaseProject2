@@ -136,15 +136,38 @@ public class App {
     	catch (SQLException ex) { System.out.println ("\n*** Error:" + ex.getMessage() + "***\n");}
     }
 
-    static void enrollStudentClass(String sid, String classid) {
+    static void enrollStudentClass(String sid, String classid, Connection conn) {
+        try {
+    		CallableStatement cs = conn.prepareCall("begin srs.enroll(:1,:2); end;");
+    		cs.setString(1, sid); cs.setString(2, classid);
+    		cs.executeQuery();
 
+    		cs.close();
+    		
+         }
+        catch (SQLException ex) { System.out.println ("\n*** Error:" + ex.getMessage() + "***\n");}
     }
 
     static void dropStudentClass(String sid, String classid) {
 
     }
 
-    static void deleteStudentTable(String sid) {
+    static void deleteStudentTable(String sid, Connection conn) {
+        try {
+    		CallableStatement cs = conn.prepareCall("begin ? := srs.delete_student(?); end;");
+            cs.registerOutParameter(1, Types.INTEGER);
+    		cs.setString(2, sid);
+    		
+    		cs.executeQuery();
+            int err = (int)cs.getInt(1);
+
+            if (err == 1){
+                System.out.println("sid not found");
+            }
+    		cs.close();
+    		
+        }
+        catch (SQLException ex) { System.out.println ("\n*** Error:" + ex.getMessage() + "***\n");}
 
     }
 
@@ -241,7 +264,7 @@ public class App {
                     String s2 = in.nextLine();
                     String classid = s2.strip();
 
-                    enrollStudentClass(sid, classid);
+                    enrollStudentClass(sid, classid, conn);
                 }
                 else if (s == 7) {
                     System.out.println("Enter sid: ");
@@ -258,7 +281,7 @@ public class App {
                     String s1 = in.nextLine();
                     String sid = s1.strip();
 
-                    deleteStudentTable(sid);
+                    deleteStudentTable(sid, conn);
                 }
                 else if (s == 9) {
                     break;
