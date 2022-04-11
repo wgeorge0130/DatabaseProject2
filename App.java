@@ -14,18 +14,12 @@ public class App {
         cs.registerOutParameter(1, OracleTypes.CURSOR);
         cs.execute();
         ResultSet rs = (ResultSet)cs.getObject(1);
-	ResultSetMetaData rsmd = rs.getMetaData();
+	    ResultSetMetaData rsmd = rs.getMetaData();
         int column_count = rsmd.getColumnCount();
 
         while (rs.next()) {
-	/*
-            System.out.println(rs.getString(1) + "\t" +
-                rs.getString(2) + "\t" + rs.getString(3) + 
-                rs.getString(4) + 
-                "\t" + rs.getDouble(5) + "\t" +
-                rs.getString(6));
-	*/
-		for (int i = 1; i <= column_count; i++) {
+	
+		    for (int i = 1; i <= column_count; i++) {
         		System.out.print("\t" + rs.getString(i) + "\t");
         	}
         	System.out.print("\n");
@@ -44,8 +38,8 @@ public class App {
     		cs.executeQuery();
     		cs.close();
     		
-    	}
-    	catch (SQLException ex) { System.out.println ("\n*** Error:" + ex.getMessage() + "***\n");}
+    }
+    catch (SQLException ex) { System.out.println ("\n*** Error:" + ex.getMessage() + "***\n");}
 
     }
 
@@ -79,7 +73,7 @@ public class App {
             }
             
             cs1.close();
-	    cs2.close();
+	        cs2.close();
             
     	}
     	catch (SQLException ex) { System.out.println ("\n*** Error:" + ex.getMessage() + "***\n");}
@@ -87,8 +81,23 @@ public class App {
 
     }
 
-    static void showCoursePrereq(String dept_code, String course_no) {
+    static void showCoursePrereq(String dept_code, String course_no, Connection conn) {
+	    try {
+    		CallableStatement cs = conn.prepareCall("begin ? := refcursor_jdbc.get_direct_prereq(?,?); end;");
+    		cs.registerOutParameter(1, OracleTypes.CURSOR);
+    		cs.setString(2, dept_code);
+    		cs.setString(3, course_no);
+    		cs.execute();
+    		ResultSet rs = (ResultSet)cs.getObject(1);
+    		
+    		while (rs.next()) {
+    			System.out.println(rs.getString(1).strip() + rs.getString(2).strip());
+			    showCoursePrereq(rs.getString(1).strip(), rs.getString(2).strip(), conn);
+    		}
 
+            cs.close();
+    	}
+    	catch (SQLException ex) { System.out.println ("\n*** Error:" + ex.getMessage() + "***\n");}
     }
 
     static void showStudentsClass(String classid) {
@@ -179,7 +188,7 @@ public class App {
                     String s2 = in.nextLine();
                     String course_no = s2.strip();
 
-                    showCoursePrereq(dept_code, course_no);
+                    showCoursePrereq(dept_code, course_no, conn);
                 }
                 else if (s == 5) {
                     /*Write a function in your package that, for a given class (with classid provided as a parameter),
