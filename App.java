@@ -121,7 +121,7 @@ public class App {
         {
             OracleDataSource ds = new oracle.jdbc.pool.OracleDataSource();
             ds.setURL("jdbc:oracle:thin:@castor.cc.binghamton.edu:1521:ACAD111");
-            Connection conn = ds.getConnection("achaudh9", "Minnvikings1428");
+            Connection conn = ds.getConnection("achaudh9", "");
 
             while(true) {
                 System.out.println("Enter: \n 1 for table \n 2 to add student into students table \n 3 to list all classes taken by students \n 4 to show all prereq courses \n 5 to show all students in a class \n 6 to enroll student in class \n 7 to drop student from class \n 8 to delete student from student table, \n 9 to exit: ");
