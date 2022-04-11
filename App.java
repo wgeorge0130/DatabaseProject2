@@ -100,8 +100,40 @@ public class App {
     	catch (SQLException ex) { System.out.println ("\n*** Error:" + ex.getMessage() + "***\n");}
     }
 
-    static void showStudentsClass(String classid) {
-
+    static void showStudentsClass(String classid, Connection conn) {
+        try {
+    		CallableStatement cs1 = conn.prepareCall("begin ? := refcursor_jdbc.getclass(?); end;");
+    		CallableStatement cs2 = conn.prepareCall("begin ? := refcursor_jdbc.all_students_taking_class(?); end;");
+    		cs1.registerOutParameter(1, OracleTypes.CURSOR);
+    		cs1.setString(2, classid);
+    		cs2.registerOutParameter(1, OracleTypes.CURSOR);
+    		cs2.setString(2, classid);
+    		cs1.execute();
+    		cs2.execute();
+            ResultSet rs1 = (ResultSet)cs1.getObject(1);
+            ResultSet rs2 = (ResultSet)cs2.getObject(1);
+            
+            rs1.next();
+            System.out.println("Class Info: " + rs1.getString(1) + "\t" + rs1.getString(2));
+            System.out.println("Students taking class:");
+            
+            
+            int rowcount = 0;
+            while (rs2.next()) {
+                System.out.println(rs2.getString(1) + "\t" +
+                    rs2.getString(2) + "\t" + rs2.getString(3));
+                rowcount++;
+            }
+            
+            if (rowcount == 0) {
+            	System.out.println("empty class.");
+            }
+            
+            cs1.close();
+	        cs2.close();
+            
+    	}
+    	catch (SQLException ex) { System.out.println ("\n*** Error:" + ex.getMessage() + "***\n");}
     }
 
     static void enrollStudentClass(String sid, String classid) {
@@ -199,7 +231,7 @@ public class App {
                     String s1 = in.nextLine();
                     String classid = s1.strip();
 
-                    showStudentsClass(classid);
+                    showStudentsClass(classid, conn);
                 }
                 else if (s == 6) {
                     System.out.println("Enter sid: ");
