@@ -9,6 +9,10 @@ import oracle.jdbc.pool.OracleDataSource;
 public class App {
 
     static void showTable(String table, Connection conn) {
+    /*
+    This function prints out the given table in terminal. We take name of table and calls PL/SQL function called get + "name of the table", which returns a cursor
+    that is convereted to a result set, and we loop through the result set and print it out.
+    */
 	try{
         CallableStatement cs = conn.prepareCall("begin ? := refcursor_jdbc.get" + table + "(); end;");
         cs.registerOutParameter(1, OracleTypes.CURSOR);
@@ -30,6 +34,10 @@ public class App {
     }
 
     static void addStudent2Table(String sid, String firstname, String lastname, String status, String GPA, String email, Connection conn) {
+    /*
+    This function adds student to the table with the given attributes: sid, firstname, lastname, status, GPA, and email taken in as parameters. 
+    We take in these attributes and call a PL/SQL function which inserts these attributes as a tuple in the students table. 
+    */
 	try {
     		CallableStatement cs = conn.prepareCall("begin srs.insert_student(:1,:2,:3,:4,:5,:6); end;");
     		cs.setString(1, sid); cs.setString(2, firstname); cs.setString(3, lastname);
@@ -44,6 +52,11 @@ public class App {
     }
 
     static void listClassStudent(String sid, Connection conn) {
+    /*
+    This function lists all classes taken by a student, we take in the sid as a parameter. 
+    We take in the sid and call a PL/SQL function which gets the information of the student, and then a function which lists all the classes taken.
+    The tuples required are returned by cursors converted to result set, looped, and printed out so, we get the student info and classes taken. 
+    */
 	try {
     		CallableStatement cs1 = conn.prepareCall("begin ? := refcursor_jdbc.getstudent(?); end;");
     		CallableStatement cs2 = conn.prepareCall("begin ? := refcursor_jdbc.all_classes_taken(?); end;");
@@ -82,6 +95,11 @@ public class App {
     }
 
     static void showCoursePrereq(String dept_code, String course_no, Connection conn) {
+    /*
+    This function lists all classes taken by a student, we take in the sid as a parameter. 
+    We take in the sid and call a PL/SQL function which gets the information of the student, and then a function which lists all the classes taken.
+    The tuples required are returned by cursors converted to result set, looped, and printed out so, we get the student info and classes taken. 
+    */
 	    try {
     		CallableStatement cs = conn.prepareCall("begin ? := refcursor_jdbc.get_direct_prereq(?,?); end;");
     		cs.registerOutParameter(1, OracleTypes.CURSOR);
@@ -101,6 +119,11 @@ public class App {
     }
 
     static void showStudentsClass(String classid, Connection conn) {
+    /*
+    This function lists all students in a class, we take in the classid. 
+    We take in the classid and call a PL/SQL function which gets the information of the class, and then a function which lists all the students enrolled in that class.
+    The tuples required are returned by cursors converted to result set, looped, and printed out so, we get the class info and students taking said class. 
+    */
         try {
     		CallableStatement cs1 = conn.prepareCall("begin ? := refcursor_jdbc.getclass(?); end;");
     		CallableStatement cs2 = conn.prepareCall("begin ? := refcursor_jdbc.all_students_taking_class(?); end;");
@@ -137,6 +160,11 @@ public class App {
     }
 
     static void enrollStudentClass(String sid, String classid, Connection conn) {
+    /*
+    This function enrolls a studnent in  class, and we take in the sid and classid as parameters.
+    We take in the classid and sid and call a PL/SQL function which inserts a tuple of sid and classid attributes in the enrollments table.
+    We assume initial grade is NULL based on the Pl/SQL function, all erorr checking is done within PL/SQL code.
+    */
         try {
     		CallableStatement cs = conn.prepareCall("begin srs.enroll(:1,:2); end;");
     		cs.setString(1, sid); cs.setString(2, classid);
@@ -149,6 +177,11 @@ public class App {
     }
 
     static void dropStudentClass(String sid, String classid, Connection conn) {
+    /*
+    This function unenroll a studnent in  class, and we take in the sid and classid as parameters.
+    We take in the classid and sid and call a PL/SQL function which deletes a tuple of said sid and classid attributes in the enrollments table.
+    All erorr checking is done within PL/SQL code.
+    */
         try {
     		CallableStatement cs = conn.prepareCall("begin srs.unenroll(:1,:2); end;");
     		cs.setString(1, sid); cs.setString(2, classid);
@@ -161,6 +194,10 @@ public class App {
     }
 
     static void deleteStudentTable(String sid, Connection conn) {
+    /*
+    This function deletes a student from the student table, we take in sid as parameter.
+    We take in the sid and call a PL/SQL function which deletes a tuple of where the sid is a key of that tuple (aka student).
+    */
         try {
     		CallableStatement cs = conn.prepareCall("begin ? := srs.delete_student(?); end;");
             cs.registerOutParameter(1, Types.INTEGER);
@@ -180,6 +217,9 @@ public class App {
     }
 
     public static void main(String[] args) throws Exception {
+        /*
+        This is essentially the UI of the textual menu interface, where we check for user input and give options for different database functionality.
+        */
         try 
         {
             OracleDataSource ds = new oracle.jdbc.pool.OracleDataSource();
@@ -238,12 +278,6 @@ public class App {
                     }
                 }
                 else if (s == 4) {
-                    /*Write a procedure, for a given course with the dept_code and course_no as the input
-    parameters, that shows all its prerequisite courses including both direct and indirect prerequisite
-    courses. If course A has course B as a prerequisite, B is a direct prerequisite of A. In addition, if B
-    has course C as a prerequisite, then C is an indirect prerequisite for A. Please also note that indirect
-    prerequisites can be more than two levels away. For each direct/indirect prerequisite course, show
-    the dept_code, course_no, e.g., CS375.*/
                     System.out.println("Enter dept_code: ");
                     String s1 = in.nextLine();
                     String dept_code = s1.strip();
@@ -254,10 +288,6 @@ public class App {
                     showCoursePrereq(dept_code, course_no, conn);
                 }
                 else if (s == 5) {
-                    /*Write a function in your package that, for a given class (with classid provided as a parameter),
-    prints the classid, course title, and all the students (show sid, lastname, and email) who have taken or
-    are taking the class, and return 0. If the class is not in the classes table, print “invalid cid” and return
-    1. If no student has taken or is taking the class, display “empty class” and return 1.*/
                     System.out.println("Enter classid: ");
                     String s1 = in.nextLine();
                     String classid = s1.strip();
