@@ -180,12 +180,20 @@ public class App {
     /*
     This function unenroll a studnent in  class, and we take in the sid and classid as parameters.
     We take in the classid and sid and call a PL/SQL function which deletes a tuple of said sid and classid attributes in the enrollments table.
-    All erorr checking is done within PL/SQL code.
+    All erorr checking is done within PL/SQL code. We also grab the class information of the specified
+    class using a PL/SQL procedure to check if it becomes empty.
     */
         try {
     		CallableStatement cs = conn.prepareCall("begin srs.unenroll(:1,:2); end;");
+            CallableStatement cs2 = conn.prepareCall("begin ? := refcursor_jdbc.getclass(?); end;");
     		cs.setString(1, sid); cs.setString(2, classid);
-    		cs.executeQuery();
+            cs2.registerOutParameter(1, OracleTypes.CURSOR); cs2.setString(2, classid);
+    		cs.executeQuery(); cs2.executeQuery();
+            ResultSet rs = (ResultSet)cs2.getObject(1);
+            rs.next();
+            if (rs.getInt(3) == 0){
+                System.out.println("no student in this class.");
+            }
 
     		cs.close();
     		
