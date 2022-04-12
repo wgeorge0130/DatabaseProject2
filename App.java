@@ -148,8 +148,16 @@ public class App {
         catch (SQLException ex) { System.out.println ("\n*** Error:" + ex.getMessage() + "***\n");}
     }
 
-    static void dropStudentClass(String sid, String classid) {
+    static void dropStudentClass(String sid, String classid, Connection conn) {
+        try {
+    		CallableStatement cs = conn.prepareCall("begin srs.unenroll(:1,:2); end;");
+    		cs.setString(1, sid); cs.setString(2, classid);
+    		cs.executeQuery();
 
+    		cs.close();
+    		
+         }
+        catch (SQLException ex) { System.out.println ("\n*** Error:" + ex.getMessage() + "***\n");}
     }
 
     static void deleteStudentTable(String sid, Connection conn) {
@@ -274,7 +282,7 @@ public class App {
                     String s2 = in.nextLine();
                     String classid = s2.strip();
 
-                    dropStudentClass(sid, classid);
+                    dropStudentClass(sid, classid, conn);
                 }
                 else if (s == 8) {
                     System.out.println("Enter sid: ");
